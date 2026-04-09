@@ -5,6 +5,14 @@
     ".": "./dist/index.js",
     "./app.plugin.js": "./app.plugin.js"
   },
+  "files": [
+    "dist",
+    "app.plugin.js",
+    "plugin/dist",
+    "android",
+    "!android/build",
+    "ios"
+  ],
   "description": "A unified maps module for Expo",
   "repository": "https://github.com/monholm/expo-unified-maps",
   "bugs": {
