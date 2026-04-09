@@ -33,11 +33,11 @@ importers:
         specifier: 2.2.0
         version: 2.2.0(typescript@5.9.3)
       '@monolease/changelog':
-        specifier: 1.0.0-rc.3
-        version: 1.0.0-rc.3
+        specifier: 1.0.0-rc.4
+        version: 1.0.0-rc.4
       '@monolease/core':
-        specifier: 1.0.0-rc.3
-        version: 1.0.0-rc.3
+        specifier: 1.0.0-rc.4
+        version: 1.0.0-rc.4
       '@monolease/github':
         specifier: 1.0.0-rc.2
         version: 1.0.0-rc.2
@@ -950,11 +950,11 @@ packages:
     peerDependencies:
       typescript: '>= 5.8.0'
 
-  '@monolease/changelog@1.0.0-rc.3':
-    resolution: {integrity: sha512-sz1+B+MLdtmZ4F/cJ0ZbctNjlvANJLn+Su9+KcqrH7L66g2SpuGR8nuawBJ2Po0yNhR/g8VwSAoJLhtaDLnJ8w==}
+  '@monolease/changelog@1.0.0-rc.4':
+    resolution: {integrity: sha512-hQBXVrvPWxNA11eSFnUmaEVWSZMT/MW6T+T5FellJhIGeeYXb2jToiH+8R3EscZ59h+/oYUrEIp+znC0ZZ99gw==}
 
-  '@monolease/core@1.0.0-rc.3':
-    resolution: {integrity: sha512-wDlHVNrf+4zTcd3awTxAZrU+g+H58+czSmf+G6/cIlIWYM/9BB7iDygRp44OJvWGsBRk6KEnJNAfC7s07PWBfA==}
+  '@monolease/core@1.0.0-rc.4':
+    resolution: {integrity: sha512-ckNBnHn6RAxSJDP1ofv0ht9mU9Kr7l6D9LKQg2Aj2JRKgHTkB3zpdKhRghY525Je3/IUQDlBmmsT1BIlHHFeog==}
 
   '@monolease/github@1.0.0-rc.2':
     resolution: {integrity: sha512-KihUAeSV3hD9ALU8A5qD57WpSE0M+pqwrNi9Eg5x79Hxidfdkwjp+qT+IYZHCj4ySDoBjJeEfIdhlpcU496C8w==}
@@ -4630,11 +4630,11 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  '@monolease/changelog@1.0.0-rc.3':
+  '@monolease/changelog@1.0.0-rc.4':
     dependencies:
-      '@monolease/core': 1.0.0-rc.3
+      '@monolease/core': 1.0.0-rc.4
 
-  '@monolease/core@1.0.0-rc.3':
+  '@monolease/core@1.0.0-rc.4':
     dependencies:
       '@monolease/util': 1.0.0-rc.2
       semver: 7.7.2
