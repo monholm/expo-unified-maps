@@ -3,9 +3,22 @@
   "private": true,
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
   "scripts": {
-    "pr-check": "turbo check lint format-check test"
+    "build": "turbo build",
+    "check": "turbo check",
+    "lint": "turbo lint",
+    "format-check": "turbo format-check",
+    "format": "turbo format",
+    "pr-check": "turbo check lint format-check test",
+    "release": "node scripts/release.ts"
   },
   "devDependencies": {
-    "turbo": "2.9.3"
+    "turbo": "2.9.3",
+    "@monolease/changelog": "1.0.0-rc.3",
+    "@monolease/core": "1.0.0-rc.3",
+    "@monolease/github": "1.0.0-rc.2",
+    "@monolease/npm-registry": "1.0.0-rc.2",
+    "@monolease/pkg-json-version": "1.0.0-rc.2",
+    "@monholm/tsconfig": "2.2.0",
+    "@types/node": "24.12.0"
   }
 }

@@ -1,0 +1,54 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+      - rc
+concurrency:
+  group: release
+jobs:
+  release:
+    environment: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # Needed to push tags and create releases
+      id-token: write # Needed for npm publish provenance
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+        with:
+          fetch-depth: 0 # fetch the entire history to get all tags and commits
+
+      - name: Setup git
+        run: git config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: .node-version
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build plugin
+        run: pnpm --filter expo-unified-maps build:plugin
+
+      - name: Build package
+        run: pnpm --filter expo-unified-maps build
+
+      - name: Release
+        env:
+          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO_OWNER_AND_NAME: ${{ github.repository }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+        run: pnpm release
