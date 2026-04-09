@@ -22,7 +22,8 @@ const config: ConfigInput = {
     branch: "rc",
     identifier: prereleaseIdentifier,
   },
-  bumpOnLockfileChange: true,
+  bumpOnLockfileChange: false,
+  ignoreWorkspaces: ["example"],
 };
 
 const { onStableBranch, workspaces } = await release({

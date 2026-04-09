@@ -13,8 +13,8 @@
   },
   "devDependencies": {
     "turbo": "2.9.3",
-    "@monolease/changelog": "1.0.0-rc.3",
-    "@monolease/core": "1.0.0-rc.3",
+    "@monolease/changelog": "1.0.0-rc.4",
+    "@monolease/core": "1.0.0-rc.4",
     "@monolease/github": "1.0.0-rc.2",
     "@monolease/npm-registry": "1.0.0-rc.2",
     "@monolease/pkg-json-version": "1.0.0-rc.2",
