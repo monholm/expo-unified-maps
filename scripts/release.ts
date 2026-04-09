@@ -22,7 +22,7 @@ const config: ConfigInput = {
     branch: "rc",
     identifier: prereleaseIdentifier,
   },
-  bumpOnLockfileChange: false,
+  bumpOnLockfileChange: true,
   ignoreWorkspaces: ["example"],
 };
 
