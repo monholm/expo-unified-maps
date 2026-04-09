@@ -1,6 +1,15 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
+    "expo-unified-maps#build:plugin": {
+      "outputs": ["plugin/dist/**"]
+    },
+    "expo-unified-maps#check": {
+      "dependsOn": ["expo-unified-maps#build:plugin"]
+    },
+    "expo-unified-maps#lint": {
+      "dependsOn": ["expo-unified-maps#build:plugin"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
