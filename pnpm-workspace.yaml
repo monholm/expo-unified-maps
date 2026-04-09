@@ -1,0 +1,25 @@
+packages:
+  - packages/*
+  - apps/*
+
+allowUnusedPatches: false
+
+autoInstallPeers: false
+
+catalogs:
+  expo:
+    "@types/react": 19.2.14
+    expo: 55.0.9
+    expo-dev-client: 55.0.19
+    expo-image: 55.0.6
+    react: 19.2.0
+    react-native: 0.83.4
+
+ignorePatchFailures: false
+
+minimumReleaseAge: 10080
+
+minimumReleaseAgeExclude:
+  - "@monholm/*"
+
+strictPeerDependencies: true

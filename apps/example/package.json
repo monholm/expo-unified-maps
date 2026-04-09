@@ -1,0 +1,41 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "expo": "expo",
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "check": "tsc",
+    "lint": "eslint . --max-warnings 0",
+    "format-check": "prettier . --check --cache-location=_unused",
+    "format": "prettier . --write --cache-location=_unused"
+  },
+  "dependencies": {
+    "expo": "catalog:expo",
+    "expo-dev-client": "catalog:expo",
+    "expo-image": "catalog:expo",
+    "expo-unified-maps": "workspace:*",
+    "react": "catalog:expo",
+    "react-native": "catalog:expo"
+  },
+  "devDependencies": {
+    "@monholm/eslint-config": "3.0.0",
+    "@monholm/prettier-config": "2.0.2",
+    "@monholm/tsconfig": "2.2.0",
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@types/react": "catalog:expo",
+    "dotenv": "17.4.0",
+    "eslint": "9.39.4",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "6.1.1",
+    "prettier": "3.8.1",
+    "type-fest": "5.5.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.58.0"
+  }
+}

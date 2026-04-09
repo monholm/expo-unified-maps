@@ -1,0 +1,5 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {"modules": ["MapViewModule"]},
+  "android": {"modules": ["com.monholm.expounifiedmaps.MapViewModule"]}
+}
