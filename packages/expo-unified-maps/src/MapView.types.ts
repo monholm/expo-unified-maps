@@ -3,6 +3,7 @@ import type {SharedRefType} from 'expo';
 
 export interface MapViewNativeProps extends ViewProps {
   boundary?: Region | undefined;
+  mapPadding?: Padding | undefined;
   markers?: Marker[] | undefined;
   onMarkerClick?: // eslint-disable-next-line no-restricted-syntax
     ((event: {nativeEvent: Omit<Marker, 'icon'>}) => void) | undefined;

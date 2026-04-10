@@ -2,6 +2,7 @@ package com.monholm.expounifiedmaps
 
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
+import android.view.View.MeasureSpec
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.views.ExpoView
@@ -29,6 +30,7 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
   private var rotateEnabled: Boolean? = null
   private var pitchEnabled: Boolean? = null
   private var boundary: Region? = null
+  private var mapPadding: Padding? = null
   private var pendingMarkers: Array<Marker>? = null
   private val currentMarkers = mutableMapOf<String, com.google.android.gms.maps.model.Marker>()
 
@@ -152,6 +154,11 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     } ?: promise.reject("MAP_NOT_READY", "GoogleMap is not ready yet", null)
   }
 
+  fun setMapPadding(padding: Padding?) {
+    mapPadding = padding
+    googleMap?.let { applyMapPadding(it, padding) }
+  }
+
   fun setBoundary(region: Region?) {
     boundary = region
     googleMap?.let { map ->
@@ -193,6 +200,28 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     }
   }
 
+  private fun applyMapPadding(map: GoogleMap, padding: Padding?) {
+    if (padding != null) {
+      val density = context.resources.displayMetrics.density
+      map.setPadding(
+        (padding.left * density).toInt(),
+        (padding.top * density).toInt(),
+        (padding.right * density).toInt(),
+        (padding.bottom * density).toInt()
+      )
+      // Force the MapView to reposition its built-in UI controls (compass, Google logo, etc.)
+      // as setPadding alone doesn't move them when called after the initial layout,
+      // they are simply clipped by the new padding.
+      // React Native's Yoga layout overrides requestLayout() as a no-op, so we directly
+      // trigger a measure+layout pass — both are required for the Maps SDK to respond.
+      mapView.measure(
+        MeasureSpec.makeMeasureSpec(mapView.width, MeasureSpec.EXACTLY),
+        MeasureSpec.makeMeasureSpec(mapView.height, MeasureSpec.EXACTLY)
+      )
+      mapView.layout(mapView.left, mapView.top, mapView.right, mapView.bottom)
+    }
+  }
+
   private fun applyBoundary(map: GoogleMap, region: Region?) {
     region?.let { boundaryRegion ->
       val bounds = boundaryRegion.toLatLngBounds()
@@ -219,6 +248,8 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     pitchEnabled?.let { isEnabled ->
       map.getUiSettings().setTiltGesturesEnabled(isEnabled)
     }
+
+    applyMapPadding(map, mapPadding)
 
     applyMarkers()
 

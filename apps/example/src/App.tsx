@@ -1,136 +1,71 @@
+import {useState} from 'react';
 import {
-  MapView,
-  type Marker,
-  type MapViewNativeFunctions,
-} from 'expo-unified-maps';
-import type {Except} from 'type-fest';
-import {useRef, useState} from 'react';
-import {Button, StyleSheet, Switch, Text, View} from 'react-native';
-import {useImage} from 'expo-image';
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+} from 'react-native';
+import Main from './screens/Main';
+import GestureControls from './screens/GestureControls';
+import MapPadding from './screens/MapPadding';
 
-const markers: Except<Marker, 'icon'>[] = [
-  {id: 'copenhagen', coordinate: {latitude: 55.6761, longitude: 12.5683}},
-  {id: 'aalborg', coordinate: {latitude: 57.0488, longitude: 9.9217}},
-  {id: 'aarhus', coordinate: {latitude: 56.1629, longitude: 10.2039}},
-];
+const screens = [
+  {key: 'main', title: 'Main', component: Main},
+  {
+    key: 'gesture-controls',
+    title: 'Gesture Controls',
+    component: GestureControls,
+  },
+  {key: 'map-padding', title: 'Map Padding', component: MapPadding},
+] as const;
 
 export default function App() {
-  const mapViewRef = useRef<MapViewNativeFunctions>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-require-imports
-  const markerIcon = useImage(require('../assets/tabler-icons/map-pin.png'));
-  const [showCompass, setShowCompass] = useState(false);
-  const [boundaryEnabled, setBoundaryEnabled] = useState(false);
-  const [zoomEnabled, setZoomEnabled] = useState(true);
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [rotateEnabled, setRotateEnabled] = useState(true);
-  const [pitchEnabled, setPitchEnabled] = useState(true);
+  const [activeScreen, setActiveScreen] = useState<string | null>(null);
+
+  const Screen = screens.find(s => s.key === activeScreen)?.component;
+
+  if (Screen !== undefined) {
+    return (
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      <SafeAreaView style={styles.container}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => {
+            setActiveScreen(null);
+          }}>
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
+        <Screen />
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <MapView
-        ref={mapViewRef}
-        style={{flex: 1}}
-        showCompass={showCompass}
-        zoomEnabled={zoomEnabled}
-        scrollEnabled={scrollEnabled}
-        rotateEnabled={rotateEnabled}
-        pitchEnabled={pitchEnabled}
-        boundary={
-          boundaryEnabled ?
-            {
-              latitude: 55.6761,
-              longitude: 12.5683,
-              latitudeDelta: 0.3,
-              longitudeDelta: 0.3,
-            }
-          : undefined
-        }
-        onMarkerClick={({nativeEvent}) => {
-          console.log('onMarkerClick', nativeEvent);
-        }}
-        markers={
-          markerIcon === null ? undefined : (
-            markers.map(marker => ({...marker, icon: markerIcon}))
-          )
-        }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={screens}
+        contentContainerStyle={styles.list}
+        renderItem={({item}) => (
+          <Pressable
+            style={styles.item}
+            onPress={() => {
+              setActiveScreen(item.key);
+            }}>
+            <Text style={styles.itemText}>{item.title}</Text>
+          </Pressable>
+        )}
       />
-      <View style={styles.overlay}>
-        <View style={styles.row}>
-          <Text>Compass</Text>
-          <Switch value={showCompass} onValueChange={setShowCompass} />
-        </View>
-        <View style={styles.row}>
-          <Text>Boundary</Text>
-          <Switch value={boundaryEnabled} onValueChange={setBoundaryEnabled} />
-        </View>
-        <View style={styles.row}>
-          <Text>Zoom</Text>
-          <Switch value={zoomEnabled} onValueChange={setZoomEnabled} />
-        </View>
-        <View style={styles.row}>
-          <Text>Scroll</Text>
-          <Switch value={scrollEnabled} onValueChange={setScrollEnabled} />
-        </View>
-        <View style={styles.row}>
-          <Text>Rotate</Text>
-          <Switch value={rotateEnabled} onValueChange={setRotateEnabled} />
-        </View>
-        <View style={styles.row}>
-          <Text>Pitch</Text>
-          <Switch value={pitchEnabled} onValueChange={setPitchEnabled} />
-        </View>
-        <Button
-          title='Go to London'
-          onPress={() => {
-            mapViewRef.current
-              ?.setRegion({
-                region: {
-                  latitude: 51.5074,
-                  longitude: -0.1278,
-                  latitudeDelta: 0.1,
-                  longitudeDelta: 0.1,
-                },
-                animateDuration: 1000,
-              })
-              .catch((error: unknown) => {
-                console.error('Error setting region:', error);
-              });
-          }}
-        />
-        <Button
-          title='Fit to Markers'
-          onPress={() => {
-            mapViewRef.current
-              ?.fitToCoordinates({
-                coordinates: markers.map(m => m.coordinate),
-                padding: {top: 50, right: 50, bottom: 50, left: 50},
-                animateDuration: 1000,
-              })
-              .catch((error: unknown) => {
-                console.error('Error fitting to markers:', error);
-              });
-          }}
-        />
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  overlay: {
-    position: 'absolute',
-    bottom: 60,
-    left: 12,
-    gap: 4,
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
+  list: {padding: 12, gap: 8},
+  item: {padding: 16, backgroundColor: 'white', borderRadius: 8},
+  itemText: {fontSize: 16},
+  backButton: {padding: 12},
+  backText: {fontSize: 16, color: '#007AFF'},
 });
