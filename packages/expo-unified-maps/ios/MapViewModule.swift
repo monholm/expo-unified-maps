@@ -35,6 +35,10 @@ public class MapViewModule: Module {
         view.setPitchEnabled(enabled: enabled)
       }
 
+      Prop("mapPadding") { (view: MapView, padding: Padding?) in
+        view.setMapPadding(padding: padding)
+      }
+
       Prop("markers") { (view: MapView, markers: [Marker]?) in
         view.setMarkers(markers: markers)
       }

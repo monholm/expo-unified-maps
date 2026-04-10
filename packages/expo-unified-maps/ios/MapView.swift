@@ -41,6 +41,16 @@ class MapView: ExpoView {
     mapView.isPitchEnabled = enabled
   }
 
+  func setMapPadding(padding: Padding?) {
+    guard let padding = padding else { return }
+    mapView.layoutMargins = UIEdgeInsets(
+      top: padding.top,
+      left: padding.left,
+      bottom: padding.bottom,
+      right: padding.right
+    )
+  }
+
   // While iOS supports padding (insets) natively, android does not,
   // so we've decided to implement it on both platforms for consistency.
   func fitToCoordinates(options: FitToCoordinatesOptions, promise: Promise) {
