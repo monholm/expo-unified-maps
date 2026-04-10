@@ -56,6 +56,9 @@ importers:
 
   apps/example:
     dependencies:
+      '@react-native-community/slider':
+        specifier: 5.1.2
+        version: 5.1.2
       expo:
         specifier: catalog:expo
         version: 55.0.9(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(react-native@0.83.4(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
@@ -967,6 +970,9 @@ packages:
 
   '@monolease/util@1.0.0-rc.2':
     resolution: {integrity: sha512-kuqQudFNSXaCKiT2Y/3eRhwG4BZTrjTGxGSsq+JQqyn2VFMSnmJjcHhpIrkwiK5fut84Tm/ERt0vfyZ1xYFfUA==}
+
+  '@react-native-community/slider@5.1.2':
+    resolution: {integrity: sha512-UV/MjCyCtSjS5BQDrrGIMmCXm309xEG6XbR0Dj65kzTraJSVDxSjQS2uBUXgX+5SZUOCzCxzv3OufOZBdtQY4w==}
 
   '@react-native/assets-registry@0.83.4':
     resolution: {integrity: sha512-aqKtpbJDSQeSX/Dwv0yMe1/Rd2QfXi12lnyZDXNn/OEKz59u6+LuPBVgO/9CRyclHmdlvwg8c7PJ9eX2ZMnjWg==}
@@ -4652,6 +4658,8 @@ snapshots:
       '@monolease/util': 1.0.0-rc.2
 
   '@monolease/util@1.0.0-rc.2': {}
+
+  '@react-native-community/slider@5.1.2': {}
 
   '@react-native/assets-registry@0.83.4': {}
 

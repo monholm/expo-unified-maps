@@ -15,6 +15,7 @@
     "format": "prettier . --write --cache-location=_unused"
   },
   "dependencies": {
+    "@react-native-community/slider": "5.1.2",
     "expo": "catalog:expo",
     "expo-dev-client": "catalog:expo",
     "expo-image": "catalog:expo",
