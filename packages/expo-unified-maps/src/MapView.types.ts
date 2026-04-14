@@ -5,6 +5,7 @@ export interface MapViewNativeProps extends ViewProps {
   boundary?: Region | undefined;
   mapPadding?: Padding | undefined;
   markers?: Marker[] | undefined;
+  onMapClick?: ((event: {nativeEvent: MapClickEvent}) => void) | undefined;
   onMarkerClick?: // eslint-disable-next-line no-restricted-syntax
     ((event: {nativeEvent: Omit<Marker, 'icon'>}) => void) | undefined;
   pitchEnabled?: boolean | undefined;
@@ -69,6 +70,20 @@ export interface FitToCoordinatesOptions {
    * If not set, or set to 0, the map will not animate and will jump to the new region.
    */
   animateDuration?: number;
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface MapClickEvent {
+  coordinate: LatLng;
+  /**
+   * The point on screen where the click occurred,
+   * relative to the map view — not the entire screen.
+   */
+  point: Point;
 }
 
 export interface Marker {
