@@ -26,6 +26,12 @@ export default function Main() {
       <MapView
         ref={mapViewRef}
         style={{flex: 1}}
+        initialRegion={{
+          latitude: 55.4038,
+          longitude: 10.4024,
+          latitudeDelta: 20,
+          longitudeDelta: 20,
+        }}
         showCompass={showCompass}
         boundary={
           boundaryEnabled ?

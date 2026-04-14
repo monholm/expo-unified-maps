@@ -3,6 +3,14 @@ import type {SharedRefType} from 'expo';
 
 export interface MapViewNativeProps extends ViewProps {
   boundary?: Region | undefined;
+  /**
+   * The initial region to display on the map.
+   *
+   * This only affects the map the first time it is provided — subsequent changes
+   * to this prop are ignored. It does not lock or constrain the map in any way;
+   * the user can still freely pan, zoom, and interact with the map after it loads.
+   */
+  initialRegion?: Region | undefined;
   mapPadding?: Padding | undefined;
   markers?: Marker[] | undefined;
   onMapClick?: ((event: {nativeEvent: MapClickEvent}) => void) | undefined;

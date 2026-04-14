@@ -5,6 +5,7 @@ class MapView: ExpoView {
   let mapView = MKMapView()
   let onMapClick = EventDispatcher()
   let onMarkerClick = EventDispatcher()
+  private var initialRegionApplied = false
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -44,6 +45,12 @@ class MapView: ExpoView {
       "coordinate": ["latitude": coordinate.latitude, "longitude": coordinate.longitude],
       "point": ["x": point.x, "y": point.y]
     ])
+  }
+
+  func setInitialRegion(region: Region?) {
+    guard !initialRegionApplied, let region = region else { return }
+    initialRegionApplied = true
+    mapView.setRegion(region.mkCoordinateRegion, animated: false)
   }
 
   override func layoutSubviews() {
