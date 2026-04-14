@@ -15,6 +15,7 @@ import com.google.maps.android.collections.MarkerManager
 import expo.modules.kotlin.viewevent.EventDispatcher
 
 class MapView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+  val onMapClick by EventDispatcher()
   val onMarkerClick by EventDispatcher()
   internal val mapView = com.google.android.gms.maps.MapView(context)
   private var googleMap: GoogleMap? = null
@@ -254,6 +255,15 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     applyMarkers()
 
     applyBoundary(map, boundary)
+
+    map.setOnMapClickListener { latLng ->
+      val point = map.projection.toScreenLocation(latLng)
+      val density = context.resources.displayMetrics.density
+      onMapClick(mapOf(
+        "coordinate" to mapOf("latitude" to latLng.latitude, "longitude" to latLng.longitude),
+        "point" to mapOf("x" to (point.x / density).toDouble(), "y" to (point.y / density).toDouble())
+      ))
+    }
 
     defaultMarkerCollection.setOnMarkerClickListener { marker ->
       val id = currentMarkers.entries.firstOrNull { it.value == marker }?.key

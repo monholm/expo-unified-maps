@@ -21,7 +21,7 @@ extension MapView: MKMapViewDelegate {
     }
 
     let view = mapView.dequeueReusableAnnotationView(withIdentifier: markerReuseId)
-      ?? MarkerAnnotationView(annotation: marker, reuseIdentifier: markerReuseId, mapView: self)
+      ?? MKAnnotationView(annotation: marker, reuseIdentifier: markerReuseId)
 
     view.annotation = marker
     view.image = scaleMarkerIcon(marker.icon)

@@ -9,7 +9,7 @@ class MapViewModule : Module() {
     Name("MapView")
 
     View(MapView::class) {
-      Events("onMarkerClick")
+      Events("onMapClick", "onMarkerClick")
 
       AsyncFunction("setRegion") { view: MapView, options: SetRegionOptions, promise: Promise ->
         view.setRegion(options, promise)

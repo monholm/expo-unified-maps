@@ -5,7 +5,7 @@ public class MapViewModule: Module {
     Name("MapView")
 
     View(MapView.self) {
-      Events("onMarkerClick")
+      Events("onMapClick", "onMarkerClick")
 
       AsyncFunction("setRegion") { (view: MapView, options: SetRegionOptions, promise: Promise) in
         view.setRegion(options: options, promise: promise)

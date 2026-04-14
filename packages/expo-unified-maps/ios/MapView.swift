@@ -3,6 +3,7 @@ import MapKit
 
 class MapView: ExpoView {
   let mapView = MKMapView()
+  let onMapClick = EventDispatcher()
   let onMarkerClick = EventDispatcher()
 
   required init(appContext: AppContext? = nil) {
@@ -10,6 +11,39 @@ class MapView: ExpoView {
     clipsToBounds = true
     mapView.delegate = self
     addSubview(mapView)
+
+    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleMapTap))
+    mapView.addGestureRecognizer(tapGesture)
+  }
+
+  @objc private func handleMapTap(_ gesture: UITapGestureRecognizer) {
+    let point = gesture.location(in: mapView)
+
+    // Expand the visible rect so markers whose coordinate is just off-screen
+    // but whose icon is still visible are included in the hit test.
+    let expandedRect = mapView.visibleMapRect.insetBy(dx: -mapView.visibleMapRect.size.width * 0.1, dy: -mapView.visibleMapRect.size.height * 0.1)
+    // only consider annotations that are visible on screen (or just off-screen within the expanded rect) for hit testing
+    // to avoid iterating over all annotations which could be a performance issue with many markers
+    for annotation in mapView.annotations(in: expandedRect) {
+      if let marker = annotation as? MarkerAnnotation,
+         let view = mapView.view(for: marker),
+         view.frame.contains(point) {
+        onMarkerClick([
+          "id": marker.id,
+          "coordinate": [
+            "latitude": marker.coordinate.latitude,
+            "longitude": marker.coordinate.longitude
+          ]
+        ])
+        return
+      }
+    }
+
+    let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
+    onMapClick([
+      "coordinate": ["latitude": coordinate.latitude, "longitude": coordinate.longitude],
+      "point": ["x": point.x, "y": point.y]
+    ])
   }
 
   override func layoutSubviews() {

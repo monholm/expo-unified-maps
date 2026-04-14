@@ -37,6 +37,9 @@ export default function Main() {
             }
           : undefined
         }
+        onMapClick={({nativeEvent}) => {
+          console.log('onMapClick', nativeEvent);
+        }}
         onMarkerClick={({nativeEvent}) => {
           console.log('onMarkerClick', nativeEvent);
         }}

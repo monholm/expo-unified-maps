@@ -7,5 +7,6 @@ export type {
   SetRegionOptions,
   Padding,
   FitToCoordinatesOptions,
+  MapClickEvent,
   Marker,
 } from './MapView.types.js';
