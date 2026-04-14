@@ -20,6 +20,10 @@ class MapViewModule : Module() {
         view.setInitialRegion(region)
       }
 
+      Prop("initialRegion") { view: MapView, region: Region? ->
+        view.setInitialRegion(region)
+      }
+
       Prop("showCompass") { view: MapView, enabled: Boolean? ->
         view.setShowCompass(enabled)
       }
