@@ -19,6 +19,10 @@ class MapViewModule : Module() {
         view.fitToCoordinates(options, promise)
       }
 
+      Prop("initialRegion") { view: MapView, region: Region? ->
+        view.setInitialRegion(region)
+      }
+
       Prop("showCompass") { view: MapView, enabled: Boolean? ->
         view.setShowCompass(enabled)
       }

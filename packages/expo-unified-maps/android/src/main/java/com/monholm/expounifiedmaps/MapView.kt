@@ -30,6 +30,8 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
   private var scrollEnabled: Boolean? = null
   private var rotateEnabled: Boolean? = null
   private var pitchEnabled: Boolean? = null
+  private var initialRegion: Region? = null
+  private var initialRegionApplied = false
   private var boundary: Region? = null
   private var mapPadding: Padding? = null
   private var pendingMarkers: Array<Marker>? = null
@@ -46,6 +48,16 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
       val defaultMarkerCollection = markerManager.newCollection()
       this.defaultMarkerCollection = defaultMarkerCollection
       applyPendingSettings(it, defaultMarkerCollection)
+    }
+  }
+
+  fun setInitialRegion(region: Region?) {
+    if (initialRegionApplied || region == null) return
+    initialRegionApplied = true
+    initialRegion = region
+    googleMap?.let { map ->
+      val bounds = region.toLatLngBounds()
+      map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
     }
   }
 
@@ -251,6 +263,11 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     }
 
     applyMapPadding(map, mapPadding)
+
+    initialRegion?.let { region ->
+      val bounds = region.toLatLngBounds()
+      map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+    }
 
     applyMarkers()
 
