@@ -88,9 +88,7 @@ export default function Main() {
           onPress={() => {
             mapViewRef.current
               ?.setRegion({
-                region: regionForCoordinates(
-                  markers.map(m => m.coordinate),
-                ),
+                region: regionForCoordinates(markers.map(m => m.coordinate)),
                 padding: {top: 50, right: 50, bottom: 50, left: 50},
                 animateDuration: 1000,
               })
