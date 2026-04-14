@@ -9,7 +9,6 @@ import expo.modules.kotlin.views.ExpoView
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.collections.MarkerManager
 import expo.modules.kotlin.viewevent.EventDispatcher
@@ -22,40 +21,93 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
   private var markerManager: MarkerManager? = null
   private var defaultMarkerCollection: MarkerManager.Collection? = null
 
-  // Pending settings to be applied once the map is ready
-  // Disable toolbar to align with iOS behavior
-  private val toolbarEnabled: Boolean = false
-  private var showCompass: Boolean? = null
-  private var zoomEnabled: Boolean? = null
-  private var scrollEnabled: Boolean? = null
-  private var rotateEnabled: Boolean? = null
-  private var pitchEnabled: Boolean? = null
-  private var initialRegion: Region? = null
   private var initialRegionApplied = false
-  private var boundary: Region? = null
-  private var mapPadding: Padding? = null
-  private var pendingMarkers: Array<Marker>? = null
   private val currentMarkers = mutableMapOf<String, com.google.android.gms.maps.model.Marker>()
+
+  // Operations that only need the GoogleMap instance are queued until getMapAsync completes.
+  // Camera operations additionally require a completed layout (size > 0).
+  private val pendingMapActions = mutableListOf<(GoogleMap) -> Unit>()
+  private val pendingCameraActions = mutableListOf<(GoogleMap) -> Unit>()
+
+  private fun runWhenMapReady(action: (GoogleMap) -> Unit) {
+    val map = googleMap
+    if (map != null) action(map)
+    else pendingMapActions.add(action)
+  }
+
+  private fun runWhenCameraReady(action: (GoogleMap) -> Unit) {
+    val map = googleMap
+    if (map != null && mapView.width > 0 && mapView.height > 0) action(map)
+    else pendingCameraActions.add(action)
+  }
+
+  private fun drainMapQueue() {
+    val map = googleMap ?: return
+    val snapshot = pendingMapActions.toList()
+    pendingMapActions.clear()
+    for (action in snapshot) action(map)
+  }
+
+  private fun drainCameraQueue() {
+    val map = googleMap ?: return
+    if (mapView.width <= 0 || mapView.height <= 0) return
+    val snapshot = pendingCameraActions.toList()
+    pendingCameraActions.clear()
+    for (action in snapshot) action(map)
+  }
 
   init {
     addView(mapView)
     mapView.onCreate(null)
     mapView.onResume()
+    mapView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+      drainCameraQueue()
+    }
     mapView.getMapAsync {
       this.googleMap = it
       val markerManager = MarkerManager(it)
       this.markerManager = markerManager
       val defaultMarkerCollection = markerManager.newCollection()
       this.defaultMarkerCollection = defaultMarkerCollection
-      applyPendingSettings(it, defaultMarkerCollection)
+
+      // Disable toolbar to align with iOS behavior
+      it.uiSettings.isMapToolbarEnabled = false
+
+      // Set up event listeners
+      it.setOnMapClickListener { latLng ->
+        val point = it.projection.toScreenLocation(latLng)
+        val density = context.resources.displayMetrics.density
+        onMapClick(mapOf(
+          "coordinate" to mapOf("latitude" to latLng.latitude, "longitude" to latLng.longitude),
+          "point" to mapOf("x" to (point.x / density).toDouble(), "y" to (point.y / density).toDouble())
+        ))
+      }
+
+      defaultMarkerCollection.setOnMarkerClickListener { marker ->
+        val id = currentMarkers.entries.firstOrNull { it.value == marker }?.key
+        if (id != null) {
+          onMarkerClick(mapOf(
+            "id" to id,
+            "coordinate" to mapOf(
+              "latitude" to marker.position.latitude,
+              "longitude" to marker.position.longitude
+            )
+          ))
+        }
+        // Return true to consume the event and thus prevent the default behavior (showing the info window and centering the map on the marker)
+        // This is done to align with the default behaviour on iOS
+        true
+      }
+
+      drainMapQueue()
+      drainCameraQueue()
     }
   }
 
   fun setInitialRegion(region: Region?) {
     if (initialRegionApplied || region == null) return
     initialRegionApplied = true
-    initialRegion = region
-    googleMap?.let { map ->
+    runWhenCameraReady { map ->
       val bounds = region.toLatLngBounds()
       map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
     }
@@ -63,77 +115,74 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
 
   fun setShowCompass(enabled: Boolean?) {
     enabled?.let { isEnabled ->
-      showCompass = isEnabled
-      googleMap?.let { map ->
-        map.getUiSettings().setCompassEnabled(isEnabled)
+      runWhenMapReady { map ->
+        map.uiSettings.isCompassEnabled = isEnabled
       }
     }
   }
 
   fun setZoomEnabled(enabled: Boolean?) {
     enabled?.let { isEnabled ->
-      zoomEnabled = isEnabled
-      googleMap?.let { map ->
-        map.getUiSettings().setZoomGesturesEnabled(isEnabled)
+      runWhenMapReady { map ->
+        map.uiSettings.isZoomGesturesEnabled = isEnabled
       }
     }
   }
 
   fun setScrollEnabled(enabled: Boolean?) {
     enabled?.let { isEnabled ->
-      scrollEnabled = isEnabled
-      googleMap?.let { map ->
-        map.getUiSettings().setScrollGesturesEnabled(isEnabled)
+      runWhenMapReady { map ->
+        map.uiSettings.isScrollGesturesEnabled = isEnabled
       }
     }
   }
 
   fun setRotateEnabled(enabled: Boolean?) {
     enabled?.let { isEnabled ->
-      rotateEnabled = isEnabled
-      googleMap?.let { map ->
-        map.getUiSettings().setRotateGesturesEnabled(isEnabled)
+      runWhenMapReady { map ->
+        map.uiSettings.isRotateGesturesEnabled = isEnabled
       }
     }
   }
 
   fun setPitchEnabled(enabled: Boolean?) {
     enabled?.let { isEnabled ->
-      pitchEnabled = isEnabled
-      googleMap?.let { map ->
-        map.getUiSettings().setTiltGesturesEnabled(isEnabled)
+      runWhenMapReady { map ->
+        map.uiSettings.isTiltGesturesEnabled = isEnabled
       }
     }
   }
 
   fun setRegion(options: SetRegionOptions, promise: Promise) {
-    googleMap?.let { map ->
+    runWhenCameraReady { map ->
       applyRegion(map, options) {
         promise.resolve(null)
       }
-    } ?: promise.reject("MAP_NOT_READY", "GoogleMap is not ready yet", null)
+    }
   }
 
   fun setMapPadding(padding: Padding?) {
-    mapPadding = padding
-    googleMap?.let { applyMapPadding(it, padding) }
+    padding?.let { p ->
+      runWhenMapReady { map ->
+        applyMapPadding(map, p)
+      }
+    }
   }
 
   fun setBoundary(region: Region?) {
-    boundary = region
-    googleMap?.let { map ->
+    runWhenCameraReady { map ->
       applyBoundary(map, region)
     }
   }
 
   fun setMarkers(markers: Array<Marker>?) {
-    pendingMarkers = markers
-    applyMarkers()
+    runWhenMapReady {
+      applyMarkers(markers ?: emptyArray())
+    }
   }
 
-  private fun applyMarkers() {
+  private fun applyMarkers(incoming: Array<Marker>) {
     val collection = defaultMarkerCollection ?: return
-    val incoming = pendingMarkers ?: emptyArray()
     val incomingIds = incoming.map { it.id }.toSet()
 
     // Remove stale markers
@@ -160,26 +209,24 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     }
   }
 
-  private fun applyMapPadding(map: GoogleMap, padding: Padding?) {
-    if (padding != null) {
-      val density = context.resources.displayMetrics.density
-      map.setPadding(
-        (padding.left * density).toInt(),
-        (padding.top * density).toInt(),
-        (padding.right * density).toInt(),
-        (padding.bottom * density).toInt()
-      )
-      // Force the MapView to reposition its built-in UI controls (compass, Google logo, etc.)
-      // as setPadding alone doesn't move them when called after the initial layout,
-      // they are simply clipped by the new padding.
-      // React Native's Yoga layout overrides requestLayout() as a no-op, so we directly
-      // trigger a measure+layout pass — both are required for the Maps SDK to respond.
-      mapView.measure(
-        MeasureSpec.makeMeasureSpec(mapView.width, MeasureSpec.EXACTLY),
-        MeasureSpec.makeMeasureSpec(mapView.height, MeasureSpec.EXACTLY)
-      )
-      mapView.layout(mapView.left, mapView.top, mapView.right, mapView.bottom)
-    }
+  private fun applyMapPadding(map: GoogleMap, padding: Padding) {
+    val density = context.resources.displayMetrics.density
+    map.setPadding(
+      (padding.left * density).toInt(),
+      (padding.top * density).toInt(),
+      (padding.right * density).toInt(),
+      (padding.bottom * density).toInt()
+    )
+    // Force the MapView to reposition its built-in UI controls (compass, Google logo, etc.)
+    // as setPadding alone doesn't move them when called after the initial layout,
+    // they are simply clipped by the new padding.
+    // React Native's Yoga layout overrides requestLayout() as a no-op, so we directly
+    // trigger a measure+layout pass — both are required for the Maps SDK to respond.
+    mapView.measure(
+      MeasureSpec.makeMeasureSpec(mapView.width, MeasureSpec.EXACTLY),
+      MeasureSpec.makeMeasureSpec(mapView.height, MeasureSpec.EXACTLY)
+    )
+    mapView.layout(mapView.left, mapView.top, mapView.right, mapView.bottom)
   }
 
   private fun applyBoundary(map: GoogleMap, region: Region?) {
@@ -187,63 +234,6 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
       val bounds = boundaryRegion.toLatLngBounds()
       map.setLatLngBoundsForCameraTarget(bounds)
     } ?: map.setLatLngBoundsForCameraTarget(null)
-  }
-
-  private fun applyPendingSettings(map: GoogleMap, defaultMarkerCollection: MarkerManager.Collection) {
-    map.getUiSettings().setMapToolbarEnabled(toolbarEnabled)
-    
-    showCompass?.let { isEnabled ->
-      map.getUiSettings().setCompassEnabled(isEnabled)
-    }
-
-    zoomEnabled?.let { isEnabled ->
-      map.getUiSettings().setZoomGesturesEnabled(isEnabled)
-    }
-    scrollEnabled?.let { isEnabled ->
-      map.getUiSettings().setScrollGesturesEnabled(isEnabled)
-    }
-    rotateEnabled?.let { isEnabled ->
-      map.getUiSettings().setRotateGesturesEnabled(isEnabled)
-    }
-    pitchEnabled?.let { isEnabled ->
-      map.getUiSettings().setTiltGesturesEnabled(isEnabled)
-    }
-
-    applyMapPadding(map, mapPadding)
-
-    initialRegion?.let { region ->
-      val bounds = region.toLatLngBounds()
-      map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
-    }
-
-    applyMarkers()
-
-    applyBoundary(map, boundary)
-
-    map.setOnMapClickListener { latLng ->
-      val point = map.projection.toScreenLocation(latLng)
-      val density = context.resources.displayMetrics.density
-      onMapClick(mapOf(
-        "coordinate" to mapOf("latitude" to latLng.latitude, "longitude" to latLng.longitude),
-        "point" to mapOf("x" to (point.x / density).toDouble(), "y" to (point.y / density).toDouble())
-      ))
-    }
-
-    defaultMarkerCollection.setOnMarkerClickListener { marker ->
-      val id = currentMarkers.entries.firstOrNull { it.value == marker }?.key
-      if (id != null) {
-        onMarkerClick(mapOf(
-          "id" to id,
-          "coordinate" to mapOf(
-            "latitude" to marker.position.latitude,
-            "longitude" to marker.position.longitude
-          )
-        ))
-      }
-      // Return true to consume the event and thus prevent the default behavior (showing the info window and centering the map on the marker)
-      // This is done to align with the default behaviour on iOS
-      true
-    }
   }
 
   private fun applyRegion(map: GoogleMap, options: SetRegionOptions, callback: (() -> Unit)? = null) {
