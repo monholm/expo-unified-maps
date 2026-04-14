@@ -3,7 +3,7 @@ import type {SharedRefType} from 'expo';
 
 export interface MapViewNativeProps extends ViewProps {
   boundary?: Region | undefined;
-  children?: never;
+  children?: null;
   /**
    * The initial region to display on the map.
    *
