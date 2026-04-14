@@ -1,5 +1,6 @@
 import {
   MapView,
+  regionForCoordinates,
   type Marker,
   type MapViewNativeFunctions,
 } from 'expo-unified-maps';
@@ -86,13 +87,13 @@ export default function Main() {
           title='Fit to Markers'
           onPress={() => {
             mapViewRef.current
-              ?.fitToCoordinates({
-                coordinates: markers.map(m => m.coordinate),
+              ?.setRegion({
+                region: regionForCoordinates(markers.map(m => m.coordinate)),
                 padding: {top: 50, right: 50, bottom: 50, left: 50},
                 animateDuration: 1000,
               })
               .catch((error: unknown) => {
-                console.error('Error fitting to markers:', error);
+                console.error('Error setting region:', error);
               });
           }}
         />

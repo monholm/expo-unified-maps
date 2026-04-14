@@ -26,7 +26,6 @@ export interface MapViewNativeProps extends ViewProps {
 
 export interface MapViewNativeFunctions {
   setRegion: (options: SetRegionOptions) => Promise<void>;
-  fitToCoordinates: (options: FitToCoordinatesOptions) => Promise<void>;
 }
 
 export interface LatLng {
@@ -42,6 +41,13 @@ export interface Region extends LatLng {
 export interface SetRegionOptions {
   region: Region;
   /**
+   * Padding (in points) between the map view edges and the region edges.
+   *
+   * When provided, the region is expanded so that each edge has at least
+   * this many points of breathing room from the map view edge.
+   */
+  padding?: Padding;
+  /**
    * Duration of the animation in milliseconds.
    * If not set, or set to 0, the map will not animate and will jump to the new region.
    */
@@ -53,31 +59,6 @@ export interface Padding {
   bottom?: number;
   left?: number;
   right?: number;
-}
-
-export interface FitToCoordinatesOptions {
-  coordinates: LatLng[];
-  /**
-   * Padding (in points) between the map view edges and the nearest coordinates.
-   *
-   * For example, setting `right: 40` ensures that the easternmost coordinate
-   * will be at least 40 points away from the right edge of the map view.
-   * Similarly, `top: 100` ensures the northernmost coordinate is at least
-   * 100 points from the top edge.
-   *
-   * Note that padding only defines a minimum distance. The map fits all
-   * coordinates within the padded area, so a coordinate on one axis may
-   * already be further from an edge than the padding requires. For example,
-   * if the northernmost coordinate is the reason the map can't zoom in
-   * further, adding `right` padding won't change the region unless a
-   * coordinate is actually closer to the right edge than the specified value.
-   */
-  padding?: Padding;
-  /**
-   * Duration of the animation in milliseconds.
-   * If not set, or set to 0, the map will not animate and will jump to the new region.
-   */
-  animateDuration?: number;
 }
 
 export interface Point {

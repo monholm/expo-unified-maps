@@ -92,58 +92,6 @@ class MapView: ExpoView {
     )
   }
 
-  // While iOS supports padding (insets) natively, android does not,
-  // so we've decided to implement it on both platforms for consistency.
-  func fitToCoordinates(options: FitToCoordinatesOptions, promise: Promise) {
-    let coordinates = options.coordinates
-
-    var maxLatitude = -90.0
-    var minLatitude = 90.0
-    var maxLongitude = -180.0
-    var minLongitude = 180.0
-
-    for coord in coordinates {
-      maxLatitude = max(maxLatitude, coord.latitude)
-      minLatitude = min(minLatitude, coord.latitude)
-      maxLongitude = max(maxLongitude, coord.longitude)
-      minLongitude = min(minLongitude, coord.longitude)
-    }
-
-    let padding = options.padding
-    let mapViewHeight = mapView.bounds.size.height
-    let mapViewWidth = mapView.bounds.size.width
-    let latitudeDelta = maxLatitude - minLatitude
-    let longitudeDelta = maxLongitude - minLongitude
-    let latPerHeight = latitudeDelta / (mapViewHeight - padding.top - padding.bottom)
-    let lngPerWidth = longitudeDelta / (mapViewWidth - padding.left - padding.right)
-
-    maxLatitude += latPerHeight * padding.top
-    minLatitude -= latPerHeight * padding.bottom
-    maxLongitude += lngPerWidth * padding.right
-    minLongitude -= lngPerWidth * padding.left
-
-    let finalLatDelta = max(maxLatitude - minLatitude, 0.000001)
-    let finalLngDelta = max(maxLongitude - minLongitude, 0.000001)
-
-    var region = MKCoordinateRegion()
-    region.center.latitude = (minLatitude + maxLatitude) / 2
-    region.center.longitude = (minLongitude + maxLongitude) / 2
-    region.span.latitudeDelta = finalLatDelta
-    region.span.longitudeDelta = finalLngDelta
-
-    let duration = Double(options.animateDuration) / 1000.0
-    if duration > 0 {
-      MKMapView.animate(withDuration: duration, animations: {
-        self.mapView.setRegion(region, animated: true)
-      }, completion: { _ in
-        promise.resolve(nil)
-      })
-    } else {
-      mapView.setRegion(region, animated: false)
-      promise.resolve(nil)
-    }
-  }
-
   func setRegion(options: SetRegionOptions, promise: Promise) {
     applyRegion(options: options) {
       promise.resolve(nil)
@@ -160,19 +108,46 @@ class MapView: ExpoView {
   }
 
   private func applyRegion(options: SetRegionOptions, completion: (() -> Void)? = nil) {
-    let region = options.region
+    let region = applyPaddingToRegion(options.region, padding: options.padding)
     let duration = Double(options.animateDuration) / 1000.0
-    
+
     if duration > 0 {
       MKMapView.animate(withDuration: duration, animations: {
-        self.mapView.setRegion(region.mkCoordinateRegion, animated: true)
+        self.mapView.setRegion(region, animated: true)
       }, completion: { _ in
         completion?()
       })
     } else {
-      mapView.setRegion(region.mkCoordinateRegion, animated: false)
+      mapView.setRegion(region, animated: false)
       completion?()
     }
+  }
+
+  private func applyPaddingToRegion(_ region: Region, padding: Padding) -> MKCoordinateRegion {
+    var maxLatitude = region.latitude + region.latitudeDelta / 2
+    var minLatitude = region.latitude - region.latitudeDelta / 2
+    var maxLongitude = region.longitude + region.longitudeDelta / 2
+    var minLongitude = region.longitude - region.longitudeDelta / 2
+
+    let mapViewHeight = mapView.bounds.size.height
+    let mapViewWidth = mapView.bounds.size.width
+    let latPerHeight = region.latitudeDelta / (mapViewHeight - padding.top - padding.bottom)
+    let lngPerWidth = region.longitudeDelta / (mapViewWidth - padding.left - padding.right)
+
+    maxLatitude += latPerHeight * padding.top
+    minLatitude -= latPerHeight * padding.bottom
+    maxLongitude += lngPerWidth * padding.right
+    minLongitude -= lngPerWidth * padding.left
+
+    let center = CLLocationCoordinate2D(
+      latitude: (minLatitude + maxLatitude) / 2,
+      longitude: (minLongitude + maxLongitude) / 2
+    )
+    let span = MKCoordinateSpan(
+      latitudeDelta: max(maxLatitude - minLatitude, 0.000001),
+      longitudeDelta: max(maxLongitude - minLongitude, 0.000001)
+    )
+    return MKCoordinateRegion(center: center, span: span)
   }
 
   func setMarkers(markers: [Marker]?) {

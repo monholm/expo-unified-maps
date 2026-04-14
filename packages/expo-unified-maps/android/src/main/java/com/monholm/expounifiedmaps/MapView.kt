@@ -106,59 +106,6 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     }
   }
 
-  fun fitToCoordinates(options: FitToCoordinatesOptions, promise: Promise) {
-    googleMap?.let { map ->
-      val coordinates = options.coordinates
-
-      var maxLatitude = -90.0
-      var minLatitude = 90.0
-      var maxLongitude = -180.0
-      var minLongitude = 180.0
-
-      for (coord in coordinates) {
-        maxLatitude = maxOf(maxLatitude, coord.latitude)
-        minLatitude = minOf(minLatitude, coord.latitude)
-        maxLongitude = maxOf(maxLongitude, coord.longitude)
-        minLongitude = minOf(minLongitude, coord.longitude)
-      }
-
-      val padding = options.padding
-      val displayDensity = context.resources.displayMetrics.density
-      val mapViewHeight = mapView.height / displayDensity
-      val mapViewWidth = mapView.width / displayDensity
-      val latitudeDelta = maxLatitude - minLatitude
-      val longitudeDelta = maxLongitude - minLongitude
-      val latPerHeight = latitudeDelta / (mapViewHeight - padding.top - padding.bottom)
-      val lngPerWidth = longitudeDelta / (mapViewWidth - padding.left - padding.right)
-
-      maxLatitude += latPerHeight * padding.top
-      minLatitude -= latPerHeight * padding.bottom
-      maxLongitude += lngPerWidth * padding.right
-      minLongitude -= lngPerWidth * padding.left
-
-      val finalLatDelta = maxOf(maxLatitude - minLatitude, 0.000001)
-      val finalLngDelta = maxOf(maxLongitude - minLongitude, 0.000001)
-      val centerLat = (minLatitude + maxLatitude) / 2
-      val centerLng = (minLongitude + maxLongitude) / 2
-
-      val bounds = LatLngBounds.builder()
-        .include(com.google.android.gms.maps.model.LatLng(centerLat + finalLatDelta / 2, centerLng + finalLngDelta / 2))
-        .include(com.google.android.gms.maps.model.LatLng(centerLat - finalLatDelta / 2, centerLng - finalLngDelta / 2))
-        .build()
-
-      val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 0)
-      if (options.animateDuration > 0) {
-        map.animateCamera(cameraUpdate, options.animateDuration, object : GoogleMap.CancelableCallback {
-          override fun onFinish() { promise.resolve(null) }
-          override fun onCancel() { promise.resolve(null) }
-        })
-      } else {
-        map.moveCamera(cameraUpdate)
-        promise.resolve(null)
-      }
-    } ?: promise.reject("MAP_NOT_READY", "GoogleMap is not ready yet", null)
-  }
-
   fun setRegion(options: SetRegionOptions, promise: Promise) {
     googleMap?.let { map ->
       applyRegion(map, options) {
@@ -300,14 +247,15 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
   }
 
   private fun applyRegion(map: GoogleMap, options: SetRegionOptions, callback: (() -> Unit)? = null) {
-    val bounds = options.region.toLatLngBounds()
+    val region = applyPaddingToRegion(options.region, options.padding)
+    val bounds = region.toLatLngBounds()
     val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 0)
     if (options.animateDuration > 0) {
       map.animateCamera(cameraUpdate, options.animateDuration, object : GoogleMap.CancelableCallback {
         override fun onFinish() {
           callback?.invoke()
         }
-        
+
         override fun onCancel() {
           callback?.invoke()
         }
@@ -316,5 +264,30 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
       map.moveCamera(cameraUpdate)
       callback?.invoke()
     }
+  }
+
+  private fun applyPaddingToRegion(region: Region, padding: Padding): Region {
+    var maxLatitude = region.latitude + region.latitudeDelta / 2
+    var minLatitude = region.latitude - region.latitudeDelta / 2
+    var maxLongitude = region.longitude + region.longitudeDelta / 2
+    var minLongitude = region.longitude - region.longitudeDelta / 2
+
+    val displayDensity = context.resources.displayMetrics.density
+    val mapViewHeight = mapView.height / displayDensity
+    val mapViewWidth = mapView.width / displayDensity
+    val latPerHeight = region.latitudeDelta / (mapViewHeight - padding.top - padding.bottom)
+    val lngPerWidth = region.longitudeDelta / (mapViewWidth - padding.left - padding.right)
+
+    maxLatitude += latPerHeight * padding.top
+    minLatitude -= latPerHeight * padding.bottom
+    maxLongitude += lngPerWidth * padding.right
+    minLongitude -= lngPerWidth * padding.left
+
+    return Region(
+      latitude = (minLatitude + maxLatitude) / 2,
+      longitude = (minLongitude + maxLongitude) / 2,
+      latitudeDelta = maxOf(maxLatitude - minLatitude, 0.000001),
+      longitudeDelta = maxOf(maxLongitude - minLongitude, 0.000001)
+    )
   }
 }

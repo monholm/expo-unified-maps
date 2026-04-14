@@ -1,4 +1,5 @@
 export {MapView} from './MapView.js';
+export {regionForCoordinates} from './util.js';
 export type {
   MapViewNativeFunctions,
   MapViewNativeProps,
@@ -6,7 +7,6 @@ export type {
   Region,
   SetRegionOptions,
   Padding,
-  FitToCoordinatesOptions,
   MapClickEvent,
   Marker,
 } from './MapView.types.js';

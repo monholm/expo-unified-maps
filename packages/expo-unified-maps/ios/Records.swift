@@ -28,7 +28,7 @@ struct Region: Record {
 
 struct SetRegionOptions: Record {
   @Field var region: Region = Region()
-
+  @Field var padding: Padding = Padding()
   @Field var animateDuration: Int = 0
 }
 
@@ -37,12 +37,6 @@ struct Padding: Record {
   @Field var bottom: Double = 0.0
   @Field var left: Double = 0.0
   @Field var right: Double = 0.0
-}
-
-struct FitToCoordinatesOptions: Record {
-  @Field var coordinates: [LatLng] = []
-  @Field var padding: Padding = Padding()
-  @Field var animateDuration: Int = 0
 }
 
 struct Marker: Record {
