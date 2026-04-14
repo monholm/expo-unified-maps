@@ -15,9 +15,6 @@ class MapViewModule : Module() {
         view.setRegion(options, promise)
       }
 
-      AsyncFunction("fitToCoordinates") { view: MapView, options: FitToCoordinatesOptions, promise: Promise ->
-        view.fitToCoordinates(options, promise)
-      }
 
       Prop("initialRegion") { view: MapView, region: Region? ->
         view.setInitialRegion(region)

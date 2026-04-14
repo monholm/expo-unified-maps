@@ -41,7 +41,7 @@ data class Region(
 
 class SetRegionOptions : Record {
   @Field val region: Region = Region()
-
+  @Field val padding: Padding = Padding()
   @Field val animateDuration: Int = 0
 }
 
@@ -50,12 +50,6 @@ class Padding : Record {
   @Field val bottom: Double = 0.0
   @Field val left: Double = 0.0
   @Field val right: Double = 0.0
-}
-
-class FitToCoordinatesOptions : Record {
-  @Field val coordinates: Array<LatLng> = emptyArray()
-  @Field val padding: Padding = Padding()
-  @Field val animateDuration: Int = 0
 }
 
 class Marker : Record {
