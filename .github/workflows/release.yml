@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write # Needed to push tags and create releases
-      id-token: write # Needed for npm publish provenance
+      id-token: write # Needed for npm trusted publishing
     steps:
       - name: Check out repository code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
@@ -49,6 +49,4 @@ jobs:
         env:
           GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO_OWNER_AND_NAME: ${{ github.repository }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
         run: pnpm release
