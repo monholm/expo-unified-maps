@@ -165,14 +165,18 @@ class MapView: ExpoView {
       if let existing = existingById[marker.id] {
         existing.coordinate = marker.coordinate.clLocationCoordinate2D
         existing.icon = marker.icon.ref
+        existing.anchorPoint = marker.anchorPoint
         if let view = mapView.view(for: existing) {
-          view.image = scaleMarkerIcon(existing.icon)
+          let icon = scaleMarkerIcon(existing.icon)
+          view.image = icon
+          view.centerOffset = centerOffset(for: existing.anchorPoint, imageSize: icon.size)
         }
       } else {
         toAdd.append(MarkerAnnotation(
           id: marker.id,
           coordinate: marker.coordinate.clLocationCoordinate2D,
-          icon: marker.icon.ref
+          icon: marker.icon.ref,
+          anchorPoint: marker.anchorPoint
         ))
       }
     }
