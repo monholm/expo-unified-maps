@@ -39,8 +39,14 @@ struct Padding: Record {
   @Field var right: Double = 0.0
 }
 
+struct Point: Record {
+  @Field var x: Double = 0.0
+  @Field var y: Double = 0.0
+}
+
 struct Marker: Record {
   @Field var id: String = ""
   @Field var coordinate: LatLng = LatLng()
   @Field var icon: SharedRef<UIImage> = SharedRef(UIImage())
+  @Field var anchorPoint: Point? = nil
 }

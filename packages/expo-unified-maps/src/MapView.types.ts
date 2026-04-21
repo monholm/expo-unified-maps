@@ -84,4 +84,13 @@ export interface Marker {
   coordinate: LatLng;
   // eslint-disable-next-line @typescript-eslint/no-deprecated -- SharedRefType should be replaced with SharedRef but causes incompatibility with expo-image.
   icon: SharedRefType<'image'>;
+  /**
+   * The point within the icon image that is anchored to the marker's
+   * geographic coordinate. Expressed as fractions of the icon's size:
+   * `x` and `y` are both in the range 0–1, where (0, 0) is the top-left
+   * and (1, 1) is the bottom-right of the icon.
+   *
+   * Defaults to (0.5, 1.0) (bottom-center) which typically works well for pin-shaped icons.
+   */
+  anchorPoint?: Point;
 }

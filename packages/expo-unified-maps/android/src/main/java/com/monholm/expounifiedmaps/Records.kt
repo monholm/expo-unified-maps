@@ -52,8 +52,14 @@ class Padding : Record {
   @Field val right: Double = 0.0
 }
 
+data class Point(
+  @Field val x: Double = 0.0,
+  @Field val y: Double = 0.0
+) : Record
+
 class Marker : Record {
   @Field val id: String = ""
   @Field val coordinate: LatLng = LatLng()
   @Field val icon: SharedRef<Drawable>? = null
+  @Field val anchorPoint: Point? = null
 }

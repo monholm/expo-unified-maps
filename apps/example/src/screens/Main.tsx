@@ -52,7 +52,11 @@ export default function Main() {
         }}
         markers={
           markerIcon === null ? undefined : (
-            markers.map(marker => ({...marker, icon: markerIcon}))
+            markers.map(marker => ({
+              ...marker,
+              icon: markerIcon,
+              anchorPoint: {x: 0.5, y: 0.5},
+            }))
           )
         }
       />

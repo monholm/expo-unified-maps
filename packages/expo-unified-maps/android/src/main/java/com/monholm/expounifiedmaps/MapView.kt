@@ -195,14 +195,20 @@ class MapView(context: Context, appContext: AppContext) : ExpoView(context, appC
     for (marker in incoming) {
       (marker.icon?.ref as? BitmapDrawable)?.bitmap?.let { bitmap ->
         val icon = BitmapDescriptorFactory.fromBitmap(bitmap)
+        // Default to (0.5, 1.0) — bottom-center — matching the documented default
+        // and Google Maps' own default anchor
+        val anchorX = (marker.anchorPoint?.x ?: 0.5).toFloat()
+        val anchorY = (marker.anchorPoint?.y ?: 1.0).toFloat()
         val existing = currentMarkers[marker.id]
         if (existing != null) {
           existing.position = marker.coordinate.toGoogleLatLng()
           existing.setIcon(icon)
+          existing.setAnchor(anchorX, anchorY)
         } else {
           val options = MarkerOptions()
             .position(marker.coordinate.toGoogleLatLng())
             .icon(icon)
+            .anchor(anchorX, anchorY)
           currentMarkers[marker.id] = collection.addMarker(options)
         }
       }
